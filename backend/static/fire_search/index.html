@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FireStation — AI Search</title>
+    <meta name="description" content="AI-powered web search with Quick Search and Deep Research modes.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><div class="logo-icon"><i class="fa-solid fa-fire"></i></div>FireStation</div>
+        </div>
+        <button class="new-chat-btn" onclick="startNewChat()"><i class="fa-solid fa-plus"></i>New Chat</button>
+        <div class="history-section" id="historySection"><div class="history-label">Recent</div></div>
+        <a href="docs.html" class="history-item" style="margin-top:auto; border-top:1px solid var(--border-2); padding-top:10px;"><i class="fa-solid fa-diagram-project"></i>Architecture Docs</a>
+        <div class="sidebar-footer"><div class="status-dot"></div>Firecrawl v2 Connected</div>
+    </aside>
+
+    <main class="main-area">
+        <div class="chat-scroll-area" id="chatScrollArea">
+            <div class="chat-container" id="chatContainer">
+                <div class="empty-hero" id="emptyHero">
+                    <div class="hero-icon"><i class="fa-solid fa-fire"></i></div>
+                    <h1>What can I find for you?</h1>
+                    <p>Search the web with AI-powered analysis. Toggle between Quick and Deep modes.</p>
+                    <div class="suggestion-chips">
+                        <button class="suggestion-chip" onclick="submitSuggestion('Latest AI agent frameworks 2025')"><i class="fa-solid fa-robot"></i> AI agent frameworks</button>
+                        <button class="suggestion-chip" onclick="submitSuggestion('Compare Next.js vs Nuxt.js vs SvelteKit')"><i class="fa-solid fa-code-compare"></i> JS frameworks</button>
+                        <button class="suggestion-chip" onclick="submitSuggestion('How does RAG retrieval work?')"><i class="fa-solid fa-book-open"></i> RAG explained</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-container">
+                <div class="crawl-bar" id="crawlBar">
+                    <i class="fa-solid fa-spider"></i>
+                    <input type="text" class="crawl-input" id="crawlInput" placeholder="Paste URL to crawl...">
+                    <button class="crawl-dismiss" onclick="toggleCrawl(false)"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="plus-menu" id="plusMenu">
+                    <button class="menu-item" onclick="toggleCrawl(true)"><i class="fa-solid fa-spider"></i>Crawl & Chat<span class="check-icon"><i class="fa-solid fa-check"></i></span></button>
+                    <button class="menu-item active"><i class="fa-solid fa-globe"></i>Web Search<span class="check-icon"><i class="fa-solid fa-check"></i></span></button>
+                    <div class="menu-divider"></div>
+                    <button class="menu-item" onclick="alert('Coming soon')"><i class="fa-solid fa-paperclip"></i>Attach files</button>
+                </div>
+                <div class="input-box">
+                    <form class="search-form" id="searchForm">
+                        <textarea class="search-input" id="searchInput" placeholder="Ask anything..." rows="1" required></textarea>
+                        <button type="submit" class="submit-btn" id="submitBtn"><i class="fa-solid fa-arrow-up"></i></button>
+                    </form>
+                    <div class="input-toolbar">
+                        <button class="toolbar-btn" id="plusBtn" onclick="togglePlusMenu()"><i class="fa-solid fa-plus"></i></button>
+                        <div class="toolbar-right">
+                            <button class="mode-selector" id="modeSelector" onclick="toggleSearchMode()">
+                                <span id="modeLabel">Quick</span><i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-help">Enter to search · Shift+Enter for new line</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

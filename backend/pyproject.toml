@@ -1,0 +1,72 @@
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.pyright]
+# Cài đặt chung của Pyright
+typeCheckingMode = "basic"
+include = ["**/*.py"]
+exclude = ["**/node_modules", "**/__pycache__"]
+
+# *** Phần quan trọng: Diagnostic Settings ***
+reportMissingTypeStubs = false # <-- Tắt cảnh báo về thiếu Type Stubs
+reportUnknownMemberType = "warning" # <-- Chỉ hiển thị ở mức cảnh báo
+reportUnannotatedClassAttribute = false # <-- Tắt cảnh báo về thuộc tính class thiếu chú thích kiểu
+
+[tool.ruff]
+# Cấu hình Ruff - "Máy hút bụi" cho Python code của bro
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+# Bật tất cả các luật (ALL) sau đó ignore những cái không cần thiết như dân Reddit khuyên
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort (tự động sắp xếp import)
+    "N",    # pep8-naming
+    "UP",   # pyupgrade (nâng cấp syntax mới)
+    "ASYNC",# <--- ĐÂY LÀ THỨ BRO CẦN: Bắt lỗi chặn luồng trong async
+    "S",    # flake8-bandit (bảo mật)
+    "B",    # flake8-bugbear (lỗi logic)
+    "A",    # flake8-builtins
+    "C4",   # flake8-comprehensions
+    "T20",  # flake8-print (không cho dùng print bừa bãi)
+    "RET",  # flake8-return
+    "SIM",  # flake8-simplify
+    "ARG",  # flake8-unused-arguments
+    "PTH",  # flake8-use-pathlib
+    "ERA",  # eradicate (xóa code bị comment)
+    "PL",   # Pylint
+    "PERF", # Perflint (tối ưu hiệu năng)
+    "FURB", # Refurb (hiện đại hóa code, tối ưu hàm có sẵn)
+    "FLY",  # Flynt (ép dùng f-string để đạt tốc độ cao nhất)
+    "LOG",  # Flake8-logging (check log chuẩn bài)
+    "RUF",  # Ruff-specific rules
+]
+
+ignore = [
+    "D",        # Bỏ qua docstring
+    "ANN",      # Bỏ qua bắt buộc type annotation
+    "T201",     # Cho phép dùng print thoải mái
+    "PLR0913",  # Cho phép nhiều argument trong hàm
+    "S101",     # Cho phép dùng assert
+    "ERA001",   # <--- THÊM: Bỏ qua cảnh báo code bị comment (để khỏi phải xóa)
+    "S104",     # <--- THÊM: Cho phép bind all interfaces (0.0.0.0)
+    "PLR2004",  # <--- THÊM: Cho phép dùng "magic value" (số trực tiếp)
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+# Những file đặc thù có thể ignore thêm lỗi
+"**/*.py" = ["E501"] # Nếu bro ghét bị nhắc dòng quá dài
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-single-line = false
+
+[tool.ruff.format]
+# Thay thế hoàn toàn Black
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FireStation — Architecture</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#fff;color:#1a1a1a;-webkit-font-smoothing:antialiased}
+.page{max-width:960px;margin:0 auto;padding:48px 24px 96px}
+a{color:#d97757;text-decoration:none}
+a:hover{text-decoration:underline}
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#888;margin-bottom:40px}
+.back:hover{color:#333;text-decoration:none}
+header{text-align:center;margin-bottom:64px}
+header h1{font-size:40px;font-weight:700;letter-spacing:-.03em}
+header h1 span{color:#d97757}
+header p{color:#666;font-size:15px;margin-top:12px;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.6}
+.section{margin-bottom:56px}
+.section h2{font-size:20px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.section h2 i{font-size:16px;color:#d97757}
+.section>p{color:#777;font-size:13px;margin-bottom:20px}
+/* Flow cards */
+.flow-card{background:#fafafa;border:1px solid #e8e8e8;border-radius:16px;padding:32px;margin-bottom:20px;overflow-x:auto}
+.flow-label{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px}
+/* SVG Flow */
+.flow-row{display:flex;align-items:center;gap:0;flex-wrap:nowrap;overflow-x:auto;padding:8px 0}
+.flow-node{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:100px;flex-shrink:0}
+.flow-box{width:120px;padding:12px 8px;border-radius:12px;text-align:center;font-size:12px;font-weight:500;line-height:1.3;border:1.5px solid;position:relative}
+.flow-box.user{background:#f0f4ff;border-color:#bdd0f7;color:#2563eb}
+.flow-box.backend{background:#fef3ee;border-color:#f5c8a8;color:#c2632a}
+.flow-box.api{background:#f0fdf4;border-color:#a7e8bc;color:#16a34a}
+.flow-box.llm{background:#faf5ff;border-color:#d4b4f4;color:#7c3aed}
+.flow-box.db{background:#f8f8f8;border-color:#ddd;color:#555}
+.flow-box.sse{background:#fffbeb;border-color:#fcd34d;color:#a16207}
+.flow-arrow{display:flex;align-items:center;color:#ccc;font-size:18px;padding:0 2px;flex-shrink:0}
+.flow-arrow-label{font-size:9px;color:#aaa;max-width:70px;text-align:center;line-height:1.2;margin-top:2px}
+/* Vertical flow */
+.vflow{display:flex;flex-direction:column;align-items:center;gap:0}
+.vflow .flow-arrow{transform:rotate(90deg);padding:4px 0}
+/* Phase tracker */
+.phase-track{display:flex;align-items:center;gap:0;flex-wrap:wrap;justify-content:center}
+.phase-dot{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:600;color:#fff;flex-shrink:0}
+.phase-dot.p1{background:#3b82f6}.phase-dot.p2{background:#8b5cf6}
+.phase-dot.p3{background:#d97757}.phase-dot.p4{background:#f59e0b}
+.phase-dot.p5{background:#10b981}.phase-dot.p6{background:#22c55e}
+.phase-label{font-size:11px;color:#666;text-align:center;max-width:80px;margin-top:4px}
+.phase-line{width:40px;height:2px;background:#e0e0e0;flex-shrink:0}
+/* Event table */
+.ev-table{width:100%;border-collapse:collapse;font-size:13px}
+.ev-table th{text-align:left;padding:10px 14px;background:#f5f5f5;color:#888;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #eee}
+.ev-table td{padding:10px 14px;border-bottom:1px solid #f0f0f0;color:#444;vertical-align:top}
+.ev-table tr:hover td{background:#fafafa}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600}
+.badge.b-blue{background:#eff6ff;color:#2563eb}.badge.b-green{background:#f0fdf4;color:#16a34a}
+.badge.b-orange{background:#fff7ed;color:#c2632a}.badge.b-gray{background:#f5f5f5;color:#888}
+code{background:#f3f3f3;padding:2px 6px;border-radius:4px;font-family:'SF Mono',monospace;font-size:11px}
+/* Feature grid */
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.feat-card{background:#fafafa;border:1px solid #e8e8e8;border-radius:14px;padding:24px}
+.feat-card h3{font-size:15px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.feat-card h3 i{color:#d97757;font-size:14px}
+.feat-card p{font-size:13px;color:#666;line-height:1.5}
+.feat-card ul{margin-top:8px;padding-left:18px;font-size:12px;color:#666}
+.feat-card li{margin-bottom:3px}
+/* Component diagram */
+.comp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.comp-box{border:1.5px solid;border-radius:14px;padding:20px}
+.comp-box h4{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.comp-box h4 i{font-size:12px}
+.comp-box ul{font-size:12px;color:#666;padding-left:16px}
+.comp-box li{margin-bottom:2px}
+.comp-box.frontend{border-color:#d97757;background:#fffaf7}
+.comp-box.frontend h4{color:#d97757}
+.comp-box.backend-c{border-color:#3b82f6;background:#f8faff}
+.comp-box.backend-c h4{color:#3b82f6}
+.comp-box.external{border-color:#16a34a;background:#f7fdf9}
+.comp-box.external h4{color:#16a34a}
+.conn-arrows{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 0;color:#bbb;font-size:12px}
+@media(max-width:768px){.feat-grid,.comp-grid{grid-template-columns:1fr}.flow-row{min-width:600px}}
+</style>
+</head>
+<body>
+<div class="page">
+<a href="index.html" class="back"><i class="fa-solid fa-arrow-left"></i> Back to FireStation</a>
+<header>
+<h1><span>FireStation</span> Architecture</h1>
+<p>How Quick Search and Deep Research work end-to-end — from user query to streamed answer.</p>
+</header>
+
+<!-- Features -->
+<div class="section">
+<h2><i class="fa-solid fa-layer-group"></i> Feature Overview</h2>
+<div class="feat-grid">
+<div class="feat-card">
+<h3><i class="fa-solid fa-bolt"></i> Quick Search</h3>
+<p>Fast web search → AI-synthesized answer via SSE streaming.</p>
+<ul><li>Firecrawl v2 /search (web + news)</li><li>5-col source cards with favicon + char count</li><li>LLM answer via FreeLLMAPI proxy</li><li>Follow-up question generation</li><li>SQLite history persistence</li></ul>
+</div>
+<div class="feat-card">
+<h3><i class="fa-solid fa-flask"></i> Deep Research</h3>
+<p>Multi-step autonomous research with LangGraph orchestration.</p>
+<ul><li>6-phase state machine</li><li>Multi-query planning + execution</li><li>Source scraping + content analysis</li><li>Progress sidebar with step tracker</li><li>Timer + source counter</li></ul>
+</div>
+</div>
+</div>
+
+<!-- Quick Search Flow -->
+<div class="section">
+<h2><i class="fa-solid fa-bolt"></i> Quick Search — End-to-End Flow</h2>
+<p>User submits query → Backend searches Firecrawl → Streams sources → Streams AI answer → Returns follow-ups.</p>
+<div class="flow-card">
+<div class="flow-label">Request Flow</div>
+<div class="flow-row">
+<div class="flow-node"><div class="flow-box user"><i class="fa-solid fa-user"></i><br>Browser<br><small>app.js</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div><div class="flow-arrow-label">POST /search/stream</div></div>
+<div class="flow-node"><div class="flow-box backend"><i class="fa-solid fa-server"></i><br>FastAPI<br><small>fire_api.py</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div><div class="flow-arrow-label">POST /v2/search</div></div>
+<div class="flow-node"><div class="flow-box api"><i class="fa-solid fa-fire"></i><br>Firecrawl<br><small>API v2</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div><div class="flow-arrow-label">results</div></div>
+<div class="flow-node"><div class="flow-box backend"><i class="fa-solid fa-server"></i><br>FastAPI<br><small>format + store</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div><div class="flow-arrow-label">chat/completions</div></div>
+<div class="flow-node"><div class="flow-box llm"><i class="fa-solid fa-brain"></i><br>FreeLLMAPI<br><small>:3001/v1</small></div></div>
+</div>
+</div>
+<div class="flow-card">
+<div class="flow-label">SSE Response Timeline</div>
+<div class="flow-row">
+<div class="flow-node"><div class="flow-box sse">① status<br><small>"Searching..."</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div></div>
+<div class="flow-node"><div class="flow-box api">② sources<br><small>web[], news[]</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div></div>
+<div class="flow-node"><div class="flow-box sse">③ status<br><small>"Generating..."</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div></div>
+<div class="flow-node"><div class="flow-box llm">④ chunk ×N<br><small>markdown stream</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div></div>
+<div class="flow-node"><div class="flow-box api">⑤ follow_ups<br><small>questions[]</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div></div>
+<div class="flow-node"><div class="flow-box db">⑥ done</div></div>
+</div>
+</div>
+</div>
+
+<!-- Deep Research Flow -->
+<div class="section">
+<h2><i class="fa-solid fa-flask"></i> Deep Research — Phase Tracker</h2>
+<p>Autonomous 6-phase research pipeline with LangGraph state machine.</p>
+<div class="flow-card">
+<div class="flow-label">LangGraph State Machine</div>
+<div class="phase-track">
+<div class="flow-node"><div class="phase-dot p1">1</div><div class="phase-label">Understanding</div></div>
+<div class="phase-line"></div>
+<div class="flow-node"><div class="phase-dot p2">2</div><div class="phase-label">Planning</div></div>
+<div class="phase-line"></div>
+<div class="flow-node"><div class="phase-dot p3">3</div><div class="phase-label">Searching</div></div>
+<div class="phase-line"></div>
+<div class="flow-node"><div class="phase-dot p4">4</div><div class="phase-label">Analyzing</div></div>
+<div class="phase-line"></div>
+<div class="flow-node"><div class="phase-dot p5">5</div><div class="phase-label">Synthesizing</div></div>
+<div class="phase-line"></div>
+<div class="flow-node"><div class="phase-dot p6">✓</div><div class="phase-label">Complete</div></div>
+</div>
+</div>
+<div class="flow-card">
+<div class="flow-label">Deep Research SSE Event Timeline</div>
+<div class="flow-row">
+<div class="flow-node"><div class="flow-box user">phase-update<br><small>Understanding</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div></div>
+<div class="flow-node"><div class="flow-box sse">thinking<br><small>Parsing query</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div></div>
+<div class="flow-node"><div class="flow-box backend">searching<br><small>Q1 of 3</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div></div>
+<div class="flow-node"><div class="flow-box api">found<br><small>5 sources</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div></div>
+<div class="flow-node"><div class="flow-box sse">source-proc<br><small>browsing→done</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div></div>
+<div class="flow-node"><div class="flow-box llm">content-chunk<br><small>streaming</small></div></div>
+<div class="flow-node"><div class="flow-arrow">→</div></div>
+<div class="flow-node"><div class="flow-box api">final-result<br><small>complete ✓</small></div></div>
+</div>
+</div>
+</div>
+
+<!-- SSE Events Table -->
+<div class="section">
+<h2><i class="fa-solid fa-code"></i> SSE Event Types</h2>
+<p>All Server-Sent Events emitted during Quick Search and Deep Research.</p>
+<div class="flow-card" style="padding:0;overflow:hidden">
+<table class="ev-table">
+<thead><tr><th>Event</th><th>Payload</th><th>Mode</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><span class="badge b-blue">status</span></td><td><code>message</code></td><td>Both</td><td>Progress text</td></tr>
+<tr><td><span class="badge b-green">sources</span></td><td><code>web[], news[]</code></td><td>Quick</td><td>Firecrawl search results</td></tr>
+<tr><td><span class="badge b-orange">chunk</span></td><td><code>content</code></td><td>Both</td><td>Streamed markdown from LLM</td></tr>
+<tr><td><span class="badge b-green">follow_ups</span></td><td><code>questions[]</code></td><td>Both</td><td>AI follow-up questions</td></tr>
+<tr><td><span class="badge b-gray">done</span></td><td><code>{}</code></td><td>Both</td><td>Stream complete</td></tr>
+<tr><td><span class="badge b-blue">phase-update</span></td><td><code>phase, message</code></td><td>Deep</td><td>LangGraph phase transition</td></tr>
+<tr><td><span class="badge b-orange">thinking</span></td><td><code>message</code></td><td>Deep</td><td>Agent reasoning</td></tr>
+<tr><td><span class="badge b-orange">searching</span></td><td><code>query, index, total</code></td><td>Deep</td><td>Sub-query execution</td></tr>
+<tr><td><span class="badge b-green">found</span></td><td><code>query, sources[]</code></td><td>Deep</td><td>Sources for sub-query</td></tr>
+<tr><td><span class="badge b-blue">source-processing</span></td><td><code>url, stage</code></td><td>Deep</td><td>Source pipeline stage</td></tr>
+<tr><td><span class="badge b-green">source-complete</span></td><td><code>url, summary</code></td><td>Deep</td><td>Source fully processed</td></tr>
+<tr><td><span class="badge b-orange">content-chunk</span></td><td><code>chunk</code></td><td>Deep</td><td>Final answer chunk</td></tr>
+<tr><td><span class="badge b-green">final-result</span></td><td><code>content, sources</code></td><td>Deep</td><td>Complete result</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- Component Diagram -->
+<div class="section">
+<h2><i class="fa-solid fa-diagram-project"></i> System Components</h2>
+<p>How frontend, backend, and external services connect.</p>
+<div class="comp-grid">
+<div class="comp-box frontend">
+<h4><i class="fa-solid fa-palette"></i> Frontend</h4>
+<ul><li>index.html + style.css</li><li>app.js (SSE client)</li><li>docs.html (this page)</li><li>marked.js (markdown)</li><li>FontAwesome icons</li></ul>
+</div>
+<div class="comp-box backend-c">
+<h4><i class="fa-solid fa-server"></i> Backend</h4>
+<ul><li>server.py (Uvicorn)</li><li>fire_api.py (Router)</li><li>firecrawl_service.py</li><li>fire_db.py (SQLite)</li><li>SSE StreamingResponse</li></ul>
+</div>
+<div class="comp-box external">
+<h4><i class="fa-solid fa-cloud"></i> External</h4>
+<ul><li>Firecrawl API v2</li><li>FreeLLMAPI (:3001)</li><li>Gemini / Groq / Mistral</li><li>OpenRouter / NVIDIA</li><li>Round-robin failover</li></ul>
+</div>
+</div>
+<div class="conn-arrows">
+<span>Frontend ←→ <code>POST /firecrawl/search/stream</code> ←→ Backend ←→ Firecrawl + LLM Proxy</span>
+</div>
+</div>
+
+</div>
+</body>
+</html>

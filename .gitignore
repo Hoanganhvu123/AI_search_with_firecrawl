@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+
+# Backend specifically
+backend/.env
+backend/.venv/
+backend/__pycache__/
+backend/*.pyc
+
+# Preference folder (development/temporary)
+preference/
+
+# Development/Test folders
+backend/hehe/
+backend/test/
+backend/scripts/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+.ruff_cache/
+*.log
+!backend/requirements.txt
+run.txt
+backend/agent/tools/query.txt
+backend/schema_dump.json
+
+# SQLite local mock DB (rebuilt from backend/database/postgres/ + starrocks/ SQL dumps)
+*.sqlite
+*.sqlite-journal
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
+
+# Large SQL dumps (exceed GitHub 100MB limit)
+backend/database/canifa_ai_dump.sqlite
+backend/database/starrocks/*.sql
