@@ -44,6 +44,9 @@ backend/hehe/
 backend/test/
 backend/scripts/
 
+# Company data — NEVER push this
+backend/datadb/
+
 # OS
 .DS_Store
 Thumbs.db
