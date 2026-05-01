@@ -148,6 +148,67 @@ async def search_stream(request: SearchRequest):
     )
 
 
+# ─── Deep Research (LangGraph Agent) ─────────────────────────
+@router.post("/deep-research/stream")
+async def deep_research_stream(request: SearchRequest):
+    """
+    SSE endpoint for Deep Research LangGraph autonomous agent.
+    """
+    async def event_generator():
+        from deep_research.graph import deep_research_graph
+        from langchain_core.messages import HumanMessage
+        
+        try:
+            state = {"messages": [HumanMessage(content=request.query)], "data_collected": False, "schema_repair_attempts": 0, "final_output": None}
+            
+            # Use stream_mode="updates" to yield state chunks as they occur
+            async for event in deep_research_graph.astream(state, stream_mode="updates"):
+                for node_name, output in event.items():
+                    messages = output.get("messages", [])
+                    if not messages:
+                        continue
+                        
+                    for msg in messages:
+                        msg_type = msg.type
+                        if msg_type == "ai":
+                            if hasattr(msg, "tool_calls") and msg.tool_calls:
+                                for tc in msg.tool_calls:
+                                    yield _sse({
+                                        "type": "tool-call",
+                                        "toolName": tc.get("name"),
+                                        "input": tc.get("args")
+                                    })
+                            if msg.content:
+                                yield _sse({
+                                    "type": "text",
+                                    "content": msg.content
+                                })
+                        elif msg_type == "tool":
+                            # For tool results, limit size to avoid crashing frontend
+                            content_str = str(msg.content)
+                            if len(content_str) > 200:
+                                content_str = content_str[:200] + "..."
+                            yield _sse({
+                                "type": "tool-result",
+                                "toolName": msg.name,
+                                "output": content_str
+                            })
+
+            yield _sse({"type": "done"})
+        except Exception as e:
+            yield _sse({"type": "error", "message": str(e)})
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
 # ─── Classic Search (backward compat) ────────────────────────
 @router.post("/search")
 async def search(request: SearchRequest):

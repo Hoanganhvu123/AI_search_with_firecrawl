@@ -33,6 +33,9 @@
 ### 3. Architecture & Data Flow
 ![FireStation Architecture Docs](public/docs.png)
 
+### 4. Deep Research Mode
+![Deep Research Mode](public/deepthink_mode.png)
+
 ---
 
 ## ⚡ Features

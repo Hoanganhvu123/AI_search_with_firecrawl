@@ -56,6 +56,13 @@ function buildAssistantResponse() {
     status.innerHTML = '<div class="spinner"></div><span class="status-text">Searching the web...</span>';
     wrap.appendChild(status);
 
+    // Thinking section (hidden initially, for Deep Research)
+    var thinkingSection = document.createElement('div');
+    thinkingSection.className = 'thinking-section';
+    thinkingSection.style.display = 'none';
+    thinkingSection.innerHTML = '<div class="section-header"><div class="section-header-left"><i class="fa-solid fa-brain"></i><h3>Thinking Process</h3></div></div><div class="thinking-logs" style="font-family: monospace; font-size: 13px; color: var(--text-2); background: var(--bg-surface); padding: 12px; border-radius: 8px; border: 1px solid var(--border-1); margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>';
+    wrap.appendChild(thinkingSection);
+
     // Sources section (hidden initially)
     var srcSection = document.createElement('div');
     srcSection.className = 'sources-section';
@@ -83,6 +90,8 @@ function buildAssistantResponse() {
     return {
         wrap: wrap,
         status: status,
+        thinkingSection: thinkingSection,
+        thinkingLogs: thinkingSection.querySelector('.thinking-logs'),
         srcSection: srcSection,
         srcGrid: srcSection.querySelector('.sources-grid'),
         srcRight: srcSection.querySelector('.section-header-right'),
@@ -129,7 +138,8 @@ form.addEventListener('submit', async function(e) {
     scrollBottom();
 
     try {
-        var resp = await fetch('/firecrawl/search/stream', {
+        var endpoint = currentMode === 'deep' ? '/firecrawl/deep-research/stream' : '/firecrawl/search/stream';
+        var resp = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query: query, sources: ['web', 'news'] })
@@ -179,8 +189,36 @@ form.addEventListener('submit', async function(e) {
                         }
                         scrollBottom();
 
+                        scrollBottom();
+
+                    } else if (d.type === 'tool-call') {
+                        r.status.style.display = 'none';
+                        r.thinkingSection.style.display = 'block';
+                        var log = document.createElement('div');
+                        log.style.marginBottom = '6px';
+                        log.innerHTML = '<i class="fa-solid fa-gear fa-spin" style="color:var(--brand); margin-right:8px;"></i> <span>Using tool <b>' + esc(d.toolName) + '</b>...</span>';
+                        r.thinkingLogs.appendChild(log);
+                        r.thinkingLogs.scrollTop = r.thinkingLogs.scrollHeight;
+                        scrollBottom();
+
+                    } else if (d.type === 'tool-result') {
+                        var log = document.createElement('div');
+                        log.style.marginBottom = '6px';
+                        log.style.color = 'var(--text-3)';
+                        log.innerHTML = '<i class="fa-solid fa-check" style="color:var(--green); margin-right:8px;"></i> <span>Completed ' + esc(d.toolName) + ' (' + esc(d.output).length + ' chars)</span>';
+                        r.thinkingLogs.appendChild(log);
+                        r.thinkingLogs.scrollTop = r.thinkingLogs.scrollHeight;
+                        scrollBottom();
+
+                    } else if (d.type === 'text') {
+                        r.status.style.display = 'none';
+                        r.ansSection.style.display = 'block';
+                        fullMd += d.content;
+                        lastFullAnswer = fullMd;
+                        r.mdBody.innerHTML = marked.parse(fullMd);
+                        scrollBottom();
+
                     } else if (d.type === 'chunk') {
-                        // Show answer section, stream markdown
                         r.ansSection.style.display = 'block';
                         fullMd += d.content;
                         lastFullAnswer = fullMd;
